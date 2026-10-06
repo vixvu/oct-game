@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pumpkin Patch Prizes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4e8f6;
+    --halo: rgba(255, 170, 60, 0.28);
+    --ink: #2a1636;
+    --muted: #6b4f7a;
+    --panel: #ffffff;
+    --panel-line: #dcc6e6;
+    --scrim: rgba(30, 10, 45, 0.55);
+    --focus: #b45309;
+    --orange: #f28a1e;
+    --orange-hot: #ff9d3a;
+    --on-orange: #2a1200;
+    --danger: #b3261e;
+    --good: #2e7d32;
+    --shadow: rgba(60, 20, 80, 0.22);
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #150d20;
+      --halo: rgba(255, 140, 30, 0.16);
+      --ink: #fbeedd;
+      --muted: #b9a2c9;
+      --panel: #241533;
+      --panel-line: #3d2754;
+      --scrim: rgba(8, 3, 14, 0.7);
+      --focus: #ffb347;
+      --danger: #ff8a80;
+      --good: #81c784;
+      --shadow: rgba(0, 0, 0, 0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #150d20;
+    --halo: rgba(255, 140, 30, 0.16);
+    --ink: #fbeedd;
+    --muted: #b9a2c9;
+    --panel: #241533;
+    --panel-line: #3d2754;
+    --scrim: rgba(8, 3, 14, 0.7);
+    --focus: #ffb347;
+    --danger: #ff8a80;
+    --good: #81c784;
+    --shadow: rgba(0, 0, 0, 0.5);
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background-color: var(--bg);
+    background-image: radial-gradient(70% 45% at 50% 0%, var(--halo), transparent 70%);
+    color: var(--ink);
+    font-family: Nunito, "Avenir Next", system-ui, sans-serif;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+  main {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 2.5rem 1.25rem 3rem;
+    text-align: center;
+  }
+  [hidden] { display: none !important; }
+  h1 {
+    font-family: "Bagel Fat One", "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
+    font-weight: 400;
+    font-size: clamp(2.2rem, 7vw, 3.6rem);
+    line-height: 1.05;
+    margin: 0 0 .6rem;
+    color: var(--orange);
+    letter-spacing: .01em;
+    text-wrap: balance;
+  }
+  .lede { margin: 0 auto 1.25rem; max-width: 38ch; min-height: 3.2em; color: var(--muted); font-size: 1.1rem; text-wrap: balance; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  /* ticket code entry */
+  .code-row { display: flex; flex-wrap: wrap; gap: .75rem; justify-content: center; align-items: center; margin: 0 auto .5rem; }
+  .code-input {
+    width: min(100%, 18rem);
+    font: inherit; font-size: 1.3rem; font-weight: 800;
+    letter-spacing: .01em; text-align: center;
+    color: var(--ink); background: var(--panel);
+    border: 2px solid var(--panel-line); border-radius: 16px;
+    padding: .5em .6em;
+  }
+  .code-input::placeholder { color: var(--muted); opacity: .55; }
+  .code-input:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  .code-msg { min-height: 1.6em; margin: 0 0 1.5rem; font-size: 1rem; color: var(--muted); }
+  .code-msg.err { color: var(--danger); }
+
+  /* ---------- pumpkin grid ---------- */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem 1.25rem;
+  }
+  /* Phones: keep all six pumpkins (3 x 2) on one screen. */
+  @media (max-width: 520px) {
+    main { padding: 1rem .75rem 2rem; }
+    h1 { font-size: 1.9rem; margin-bottom: .3rem; }
+    .lede { font-size: 1rem; margin-bottom: .75rem; min-height: 0; }
+    .grid {
+      gap: .2rem .4rem;
+      max-width: min(100%, calc((100vh - 12.5rem) * 1.5));
+      margin-inline: auto;
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .chip-row { min-height: 2.4rem; margin-top: .15rem; }
+    .chip { font-size: .72rem; padding: .15em .5em; text-align: center; }
+    .status { min-height: 2.6rem; margin-top: .5rem; font-size: 1rem; }
+    .pumpkin { border-radius: 16px; }
+  }
+  .cell { display: flex; flex-direction: column; align-items: stretch; }
+
+  .pumpkin {
+    appearance: none;
+    background: none;
+    border: 0;
+    padding: 0;
+    width: 100%;
+    cursor: pointer;
+    border-radius: 28px;
+    color: inherit;
+    transition: transform .25s cubic-bezier(.3,1.4,.5,1), opacity .5s ease, filter .5s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .pumpkin svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .pumpkin:not(:disabled):hover { transform: translateY(-6px) rotate(-2deg); }
+  .pumpkin:not(:disabled):active { transform: translateY(-2px) scale(.97); }
+  .pumpkin:focus-visible { outline: 3px solid var(--focus); outline-offset: 4px; }
+  .pumpkin:disabled { cursor: default; }
+  .pumpkin.dim { opacity: .5; filter: saturate(.6); }
+  .pumpkin.picked { transform: scale(1.06); }
+  .grid.locked .pumpkin { opacity: .55; filter: saturate(.7); }
+
+  .shadow { fill: var(--shadow); }
+
+  .pumpkin.shake svg { animation: wiggle .5s ease-in-out; transform-origin: 50% 92%; }
+  @keyframes wiggle {
+    0%   { transform: rotate(0); }
+    20%  { transform: rotate(-7deg); }
+    40%  { transform: rotate(7deg); }
+    60%  { transform: rotate(-5deg); }
+    80%  { transform: rotate(4deg); }
+    100% { transform: rotate(0); }
+  }
+
+  .num {
+    font-family: "Bagel Fat One", "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
+    fill: #fff4d6; stroke: #7a3204; stroke-width: 6; stroke-linejoin: round; paint-order: stroke;
+    pointer-events: none; transition: opacity .35s ease;
+  }
+  .pumpkin.carving .num { opacity: 0; }
+
+  .glow { opacity: 0; transition: opacity .9s ease .8s; pointer-events: none; }
+  .pumpkin.lit .glow { opacity: .8; }
+
+  .face { display: none; }
+  .pumpkin.carving .face { display: block; }
+  .face path {
+    fill: url(#cutGrad);
+    fill-opacity: 0;
+    stroke: #6b2a02;
+    stroke-width: 2.6;
+    stroke-linejoin: round;
+    stroke-linecap: butt;
+    stroke-dasharray: 1 1;
+    stroke-dashoffset: 1;
+  }
+  .pumpkin.carving .face path {
+    animation:
+      draw .7s ease-out calc(var(--i) * .12s) forwards,
+      fillin .45s ease-out calc(.65s + var(--i) * .12s) forwards;
+  }
+  .pumpkin.instant .face path { animation: none !important; stroke-dashoffset: 0; fill-opacity: 1; }
+  .pumpkin.instant .glow { transition: none; }
+  .pumpkin.lit .face { filter: drop-shadow(0 0 5px rgba(255, 208, 70, .95)); }
+  @keyframes draw   { to { stroke-dashoffset: 0; } }
+  @keyframes fillin { to { fill-opacity: 1; } }
+
+  .bit { fill: #ff9a2a; stroke: #b45309; stroke-width: 1; transform-box: fill-box; transform-origin: center; animation: fall 1.1s cubic-bezier(.4,0,.9,.6) forwards; }
+  @keyframes fall {
+    0%   { transform: translate(0, 0) rotate(0); opacity: 1; }
+    100% { transform: translate(var(--dx), var(--dy)) rotate(var(--rot)); opacity: 0; }
+  }
+
+  .chip-row { display: flex; justify-content: center; align-items: flex-start; min-height: 3.1rem; margin-top: .4rem; }
+  .chip {
+    display: inline-flex; align-items: center; justify-content: center; gap: .35em;
+    padding: .25em .75em;
+    border-radius: 999px;
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    font-size: .85rem; font-weight: 800; line-height: 1.25;
+    opacity: 0; transform: translateY(-4px);
+    transition: opacity .4s ease, transform .4s ease;
+  }
+  .chip:empty { display: none; }
+  .peek .chip { opacity: 1; transform: none; }
+  .chip.win { border-color: var(--orange); box-shadow: 0 0 0 2px color-mix(in srgb, var(--orange) 40%, transparent); }
+
+  .status {
+    min-height: 3.4rem; margin-top: 1.25rem;
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .5rem 1rem;
+    font-size: 1.1rem;
+  }
+  .status:focus { outline: none; }
+  .status .won { font-weight: 800; }
+  .status .when { color: var(--muted); font-size: .95rem; }
+
+  .btn {
+    appearance: none; border: 0; cursor: pointer;
+    font: inherit; font-weight: 800;
+    padding: .65em 1.4em; border-radius: 999px;
+    background: var(--orange); color: var(--on-orange);
+    transition: background .15s ease, transform .15s ease;
+  }
+  .btn:hover:not(:disabled) { background: var(--orange-hot); transform: translateY(-1px); }
+  .btn:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  .btn.ghost { background: transparent; color: var(--ink); border: 2px solid var(--panel-line); }
+  .btn.ghost:hover:not(:disabled) { background: var(--panel); }
+  .btn.small { padding: .3em .9em; font-size: .9rem; }
+
+  /* prize card */
+  .scrim {
+    position: fixed; inset: 0; z-index: 10;
+    display: grid; place-items: center;
+    padding: calc(1rem + env(safe-area-inset-top, 0px)) 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
+    background: var(--scrim);
+    animation: fadein .35s ease;
+  }
+  @keyframes fadein { from { opacity: 0; } }
+  .card {
+    width: min(92vw, 380px);
+    background: var(--panel);
+    border: 2px solid var(--panel-line);
+    border-radius: 28px;
+    padding: 2rem 1.5rem 1.5rem;
+    text-align: center;
+    box-shadow: 0 0 60px rgba(255, 160, 40, .35);
+    animation: rise .5s cubic-bezier(.3,1.4,.5,1);
+  }
+  @keyframes rise { from { transform: translateY(24px) scale(.9); opacity: 0; } }
+  .card .emoji {
+    display: block; font-size: 5.5rem; line-height: 1.1; margin-bottom: .25rem;
+    animation: pop .7s cubic-bezier(.3,1.6,.5,1) .15s both;
+    filter: drop-shadow(0 0 18px rgba(255, 190, 60, .7));
+  }
+  @keyframes pop { from { transform: scale(0) rotate(-25deg); } }
+  .card h2 { font-family: "Bagel Fat One", "Arial Rounded MT Bold", system-ui, sans-serif; font-weight: 400; font-size: 1.5rem; margin: 0 0 .25rem; color: var(--orange); }
+  .card .prize-name { font-size: 1.35rem; font-weight: 800; margin: 0 0 .5rem; text-wrap: balance; }
+  .card .fine { margin: 0 0 1.25rem; color: var(--muted); font-size: .95rem; }
+  .card .actions { display: flex; flex-wrap: wrap; gap: .6rem; justify-content: center; }
+
+  /* host check (add #host to the web address) */
+  .host-panel {
+    max-width: 480px; margin: 0 auto; text-align: left;
+    background: var(--panel); border: 2px solid var(--panel-line); border-radius: 20px; padding: 1.25rem;
+  }
+  .host-panel h2 { margin: 0 0 .25rem; font-size: 1.25rem; }
+  .host-panel p { margin: 0 0 1rem; color: var(--muted); font-size: .95rem; }
+  .host-panel .code-row { justify-content: flex-start; margin-bottom: .5rem; }
+  .host-result { min-height: 5rem; margin-top: .75rem; }
+  .host-result .big { font-size: 1.5rem; font-weight: 800; overflow-wrap: anywhere; }
+  .host-result .state { margin: .25rem 0 .75rem; font-weight: 800; }
+  .host-result .state.ok { color: var(--good); }
+  .host-result .state.used { color: var(--danger); }
+  .host-tally { margin-top: 1rem; color: var(--muted); font-size: .95rem; }
+  .host-test { margin-top: 1rem; display: flex; flex-wrap: wrap; gap: .5rem 1rem; align-items: center; }
+  .host-test .code-msg { margin: 0; min-height: 0; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pumpkin, .glow, .chip { transition: none; }
+    .pumpkin.shake svg { animation: none; }
+    .pumpkin.carving .face path { animation: none; stroke-dashoffset: 0; fill-opacity: 1; }
+    .bit { display: none; }
+    .scrim, .card, .card .emoji { animation: none; }
+  }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="lobeDark" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#c25a0a"/><stop offset="1" stop-color="#e57a12"/>
+    </linearGradient>
+    <linearGradient id="lobeMid" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#e9780f"/><stop offset=".5" stop-color="#fb9420"/><stop offset="1" stop-color="#ea790f"/>
+    </linearGradient>
+    <linearGradient id="lobeLight" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#f98a1a"/><stop offset=".5" stop-color="#ffab3f"/><stop offset="1" stop-color="#f98a1a"/>
+    </linearGradient>
+    <radialGradient id="glowGrad" cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="#fff3a6" stop-opacity="1"/>
+      <stop offset=".55" stop-color="#ffc43d" stop-opacity=".85"/>
+      <stop offset="1" stop-color="#ff8a1a" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="cutGrad" cx=".5" cy=".45" r=".7">
+      <stop offset="0" stop-color="#fffbd0"/><stop offset="1" stop-color="#ffcf45"/>
+    </radialGradient>
+  </defs>
+</svg>
+
+<main>
+  <h1>Pumpkin Patch Prizes</h1>
+
+  <!-- ===== players ===== -->
+  <section id="playerView">
+    <p class="lede" id="lede" aria-live="polite">Enter your username, then pick a pumpkin.</p>
+
+    <div id="codeBlock">
+      <div class="code-row">
+        <label class="sr" for="code">Your username</label>
+        <input class="code-input" id="code" type="text" inputmode="text" autocapitalize="none" autocomplete="off" autocorrect="off" spellcheck="false" maxlength="32" placeholder="@username">
+        <button class="btn" id="unlock" type="button">Start</button>
+      </div>
+      <p class="code-msg" id="codeMsg" role="status"></p>
+    </div>
+
+    <div class="grid locked" id="grid"></div>
+
+    <div class="status" id="status" aria-live="polite" tabindex="-1">
+      <span id="statusText"></span>
+      <button class="btn ghost small" id="changeName" type="button" hidden>Change username</button>
+      <button class="btn" id="nextPlayer" type="button" hidden>Tip to play again</button>
+    </div>
+  </section>
+
+  <!-- ===== host check: open this page with #host on the end of the address ===== -->
+  <section id="hostView" hidden>
+    <div class="host-panel">
+      <h2>Host check</h2>
+      <p>Type a player's username to see what they win. Use it to check a claim. This device remembers which prizes you've marked as handed out.</p>
+      <div class="code-row">
+        <label class="sr" for="hostCode">Username</label>
+        <input class="code-input" id="hostCode" type="text" inputmode="text" autocapitalize="none" autocomplete="off" autocorrect="off" spellcheck="false" maxlength="32" placeholder="@username">
+        <button class="btn" id="hostCheck" type="button">Check</button>
+      </div>
+      <div class="host-result" id="hostResult" aria-live="polite"></div>
+      <div class="host-tally" id="hostTally"></div>
+      <div class="host-test">
+        <button class="btn small ghost" id="hostTest" type="button">Send a test notification</button>
+        <span class="code-msg" id="hostTestMsg" role="status"></span>
+      </div>
+      <p class="host-tally" id="hostChannels"></p>
+    </div>
+  </section>
+</main>
+
+<div class="scrim" id="scrim" hidden>
+  <div class="card" role="dialog" aria-modal="true" aria-labelledby="prizeTitle">
+    <span class="emoji" id="prizeEmoji" aria-hidden="true"></span>
+    <h2 id="prizeTitle">You found a prize!</h2>
+    <p class="prize-name" id="prizeName"></p>
+    <p class="fine" id="prizeFine"></p>
+    <div class="actions">
+      <button class="btn ghost" id="peek" type="button">Peek at the others</button>
+      <button class="btn" id="closeCard" type="button">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  /* ====================== SETTINGS: edit this block ====================== */
+  var CONFIG = {
+    // The six prizes. Each player always wins the same one, decided by their username.
+    prizes: [
+      { emoji: "📸", name: "Photo" },
+      { emoji: "🎥", name: "Video" },
+      { emoji: "👻", name: "Snap" },
+      { emoji: "🎬", name: "Clip" },
+      { emoji: "💬", name: "Sext" },
+      { emoji: "🍬", name: "Treat" }
+    ],
+
+    // HOW YOU GET NOTIFIED. Paste your Discord webhook URL between the quotes. (Recommended.)
+    // Discord webhooks are write-only: people can't read your messages from the link.
+    discordWebhook: "",
+
+    // OPTIONAL alternative: a ntfy.sh topic name. Careful: anyone who reads this page's source
+    // can listen to a ntfy topic, so usernames and prizes would not be private.
+    ntfyTopic: "",
+
+    // Mixes up who wins what. Change it to reshuffle the draw.
+    salt: "83ec54db0c762155"
+  };
+  /* ======================================================================= */
+
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var PENDING_KEY = "pumpkin-pending-v2";   // notifications that still need to be sent
+  var SENT_KEY = "pumpkin-sent-v2";         // usernames already reported from this device
+  var HANDED_KEY = "pumpkin-handed-user-v1";
+  var PRIZES = CONFIG.prizes;
+  var COUNT = PRIZES.length;
+
+  var FACES = [
+    [ "M64 106 L77 82 L90 106 Z", "M110 106 L123 82 L136 106 Z", "M95 116 L105 116 L100 108 Z", "M60 122 Q100 164 140 122 Q100 134 60 122 Z" ],
+    [ "M69 100 a9 9 0 1 0 18 0 a9 9 0 1 0 -18 0 Z", "M113 100 a9 9 0 1 0 18 0 a9 9 0 1 0 -18 0 Z", "M68 120 Q100 128 132 120 Q128 152 100 152 Q72 152 68 120 Z" ],
+    [ "M64 104 Q77 84 90 104 Q77 95 64 104 Z", "M110 104 Q123 84 136 104 Q123 95 110 104 Z", "M97 114 Q100 119 103 114 Q100 112 97 114 Z", "M80 126 Q100 144 120 126 Q100 134 80 126 Z" ],
+    [ "M66 96 L78 80 L90 96 L78 104 Z", "M110 96 L122 80 L134 96 L122 104 Z", "M58 118 Q100 130 142 118 L134 136 L122 128 L112 144 L100 132 L88 144 L78 128 L66 136 Z" ]
+  ];
+
+  var $ = function (id) { return document.getElementById(id); };
+  var grid = $("grid"), lede = $("lede"), statusText = $("statusText"), statusBox = $("status");
+  var changeBtn = $("changeName"), nextBtn = $("nextPlayer");
+  var nameBlock = $("codeBlock"), nameInput = $("code"), nameMsg = $("codeMsg"), startBtn = $("unlock");
+  var scrim = $("scrim"), prizeEmoji = $("prizeEmoji"), prizeName = $("prizeName"), prizeFine = $("prizeFine");
+  var peekBtn = $("peek"), closeBtn = $("closeCard");
+  var playerView = $("playerView"), hostView = $("hostView");
+
+  var session = null;      // { name, plan } once a username has been entered
+  var picked = false;
+  var timers = [];
+
+  /* ---------- small helpers ---------- */
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function randInt(n) { return Math.floor(Math.random() * n); }
+  function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
+  function clearTimers() { timers.forEach(clearTimeout); timers = []; }
+  function fmtTime(ms) {
+    try { return new Date(ms).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }); } catch (e) { return ""; }
+  }
+  function store(key, val) { try { if (val === null) localStorage.removeItem(key); else localStorage.setItem(key, JSON.stringify(val)); } catch (e) {} }
+  function load(key) { try { var r = localStorage.getItem(key); return r ? JSON.parse(r) : null; } catch (e) { return null; } }
+
+  /* ---------- usernames and the prize draw ---------- */
+  // "@Alice " and "alice" are the same player.
+  function cleanName(raw) { return String(raw || "").trim().toLowerCase().replace(/^@+/, ""); }
+  function validName(s) { return /^[a-z0-9._-]{2,30}$/.test(s); }
+  var NAME_HELP = "Usernames use letters, numbers, dots, underscores and dashes (2 to 30 characters).";
+
+  // A small, fast hash (the same in every browser), so a username always lands on the same prize.
+  function cyrb53(str, seed) {
+    var h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+    for (var i = 0, ch; i < str.length; i++) {
+      ch = str.charCodeAt(i);
+      h1 = Math.imul(h1 ^ ch, 2654435761);
+      h2 = Math.imul(h2 ^ ch, 1597334677);
+    }
+    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507); h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+    h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507); h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+    return 4294967296 * (2097151 & h2) + (h1 >>> 0);
+  }
+  function mulberry32(a) {
+    return function () {
+      a = (a + 0x6D2B79F5) | 0;
+      var t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function planFor(name) {
+    var win = cyrb53(CONFIG.salt + ":" + name, 0) % COUNT;
+    var others = PRIZES.filter(function (p, i) { return i !== win; });
+    var rnd = mulberry32(cyrb53(CONFIG.salt + ":decoys:" + name, 7) >>> 0);
+    for (var i = others.length - 1; i > 0; i--) {
+      var j = Math.floor(rnd() * (i + 1)), t = others[i]; others[i] = others[j]; others[j] = t;
+    }
+    return { prize: PRIZES[win], decoys: others };
+  }
+  // The won prize sits behind the picked pumpkin; the other pumpkins show what was missed.
+  function orderFor(plan, pickedIdx) {
+    var out = [], k = 0;
+    for (var j = 0; j < COUNT; j++) out.push(j === pickedIdx ? plan.prize : plan.decoys[k++]);
+    return out;
+  }
+
+  /* ---------- notifications ---------- */
+  function post(url, opts) {
+    if (typeof fetch !== "function") return Promise.resolve(false);
+    return fetch(url, opts).then(function (r) { return !!r.ok; }, function () { return false; });
+  }
+  // Resolves true if the message reached at least one channel (or none are set up).
+  function notify(discordText, plainText, title) {
+    var jobs = [];
+    if (CONFIG.discordWebhook) {
+      jobs.push(post(CONFIG.discordWebhook, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: "Pumpkin Patch", content: discordText, allowed_mentions: { parse: [] } }),
+        keepalive: true
+      }));
+    }
+    if (CONFIG.ntfyTopic) {
+      jobs.push(post("https://ntfy.sh/" + encodeURIComponent(CONFIG.ntfyTopic) + "?title=" + encodeURIComponent(title) + "&tags=jack_o_lantern", {
+        method: "POST", body: plainText, keepalive: true
+      }));
+    }
+    if (!jobs.length) return Promise.resolve(true);
+    return Promise.all(jobs).then(function (r) { return r.some(Boolean); });
+  }
+  function sendPing(sess, pumpkinIdx, isRetry, at) {
+    var p = sess.plan.prize, late = isRetry ? " (sent late)" : "";
+    var when = fmtTime(at || Date.now());
+    return notify(
+      "🎃 `" + sess.name + "` won " + p.emoji + " **" + p.name + "** · pumpkin " + (pumpkinIdx + 1) + " · " + when + late,
+      sess.name + " won " + p.emoji + " " + p.name + "\nPumpkin " + (pumpkinIdx + 1) + " at " + when + late,
+      "Pumpkin play");
+  }
+
+  // A play is queued, sent, and only forgotten once a message got through. If the phone has no
+  // signal, it is sent on the next visit. Each username is only reported once per device, so
+  // playing the same name again doesn't send you the same message twice.
+  function deliver(item, isRetry) {
+    var sess = { name: item.name, plan: planFor(item.name) };
+    return sendPing(sess, item.pumpkin, isRetry, item.at).then(function (ok) {
+      if (ok) {
+        var left = (load(PENDING_KEY) || []).filter(function (p) { return p.name !== item.name; });
+        store(PENDING_KEY, left.length ? left : null);
+        var sent = load(SENT_KEY) || {};
+        sent[item.name] = Date.now();
+        store(SENT_KEY, sent);
+      }
+      return ok;
+    });
+  }
+  function queuePing(sess, pumpkinIdx) {
+    var sent = load(SENT_KEY) || {};
+    if (sent[sess.name]) return;
+    var item = { name: sess.name, pumpkin: pumpkinIdx, at: Date.now() };
+    var pend = load(PENDING_KEY) || [];
+    pend.push(item);
+    store(PENDING_KEY, pend);
+    deliver(item, false);
+  }
+  function retryPending() {
+    var sent = load(SENT_KEY) || {}, seen = {};
+    (load(PENDING_KEY) || []).forEach(function (item) {
+      if (!item || typeof item.name !== "string" || !validName(item.name) || sent[item.name] || seen[item.name]) return;
+      seen[item.name] = true;
+      deliver(item, true);
+    });
+  }
+
+  /* ---------- pumpkin drawing ---------- */
+  function pumpkinSVG(n) {
+    return '' +
+    '<svg viewBox="0 0 200 190" aria-hidden="true" focusable="false">' +
+      '<ellipse class="shadow" cx="100" cy="181" rx="66" ry="8"/>' +
+      '<ellipse cx="52" cy="110" rx="42" ry="58" fill="url(#lobeDark)" stroke="#9c3f06" stroke-width="2.5"/>' +
+      '<ellipse cx="148" cy="110" rx="42" ry="58" fill="url(#lobeDark)" stroke="#9c3f06" stroke-width="2.5"/>' +
+      '<ellipse cx="78" cy="110" rx="42" ry="64" fill="url(#lobeMid)" stroke="#9c3f06" stroke-width="2.5"/>' +
+      '<ellipse cx="122" cy="110" rx="42" ry="64" fill="url(#lobeMid)" stroke="#9c3f06" stroke-width="2.5"/>' +
+      '<ellipse cx="100" cy="110" rx="36" ry="68" fill="url(#lobeLight)" stroke="#9c3f06" stroke-width="2.5"/>' +
+      '<ellipse cx="60" cy="74" rx="7" ry="15" fill="#fff" opacity=".28" transform="rotate(-24 60 74)"/>' +
+      '<text class="num" x="100" y="134" text-anchor="middle" font-size="66">' + n + '</text>' +
+      '<ellipse class="glow" cx="100" cy="112" rx="80" ry="58" fill="url(#glowGrad)"/>' +
+      '<g class="face"></g>' +
+      '<path d="M86 48 C70 36 58 40 54 48 C66 54 78 54 86 48 Z" fill="#7bab3d" stroke="#46661c" stroke-width="2" stroke-linejoin="round"/>' +
+      '<path d="M112 42 C128 30 142 36 138 46 C135 53 126 50 129 44" fill="none" stroke="#5e8f2f" stroke-width="3" stroke-linecap="round"/>' +
+      '<path d="M89 50 C86 34 91 24 100 19 C109 22 115 29 112 50 Z" fill="#6a8a2e" stroke="#3d5418" stroke-width="2.5" stroke-linejoin="round"/>' +
+      '<g class="bits"></g>' +
+    '</svg>';
+  }
+  function carveInto(btn, faceIdx) {
+    var face = FACES[((faceIdx % FACES.length) + FACES.length) % FACES.length];
+    btn.querySelector(".face").innerHTML = face.map(function (d, n) {
+      return '<path d="' + d + '" pathLength="1" style="--i:' + n + '"/>';
+    }).join("");
+  }
+  function spawnBits(btn) {
+    var g = btn.querySelector(".bits");
+    if (!g) return;
+    var out = "";
+    for (var k = 0; k < 12; k++) {
+      var x = 66 + Math.random() * 68, y = 96 + Math.random() * 44;
+      var dx = (Math.random() - 0.5) * 70, dy = 50 + Math.random() * 70, rot = (Math.random() - 0.5) * 540;
+      out += '<g transform="translate(' + x.toFixed(1) + ' ' + y.toFixed(1) + ')">' +
+        '<path class="bit" d="M0 0 L8 2 L3 9 Z" style="--dx:' + dx.toFixed(0) + 'px;--dy:' + dy.toFixed(0) + 'px;--rot:' + rot.toFixed(0) + 'deg;animation-delay:' + (Math.random() * 0.5).toFixed(2) + 's"/>' +
+      '</g>';
+    }
+    g.innerHTML = out;
+  }
+
+  /* ---------- board ---------- */
+  function buildBoard() {
+    clearTimers();
+    picked = false;
+    grid.classList.remove("peek");
+    scrim.hidden = true;
+    changeBtn.hidden = true;
+    nextBtn.hidden = true;
+    statusText.textContent = "";
+    var html = "";
+    for (var i = 0; i < COUNT; i++) {
+      html += '<div class="cell">' +
+        '<button type="button" class="pumpkin" data-i="' + i + '" aria-label="Pumpkin ' + (i + 1) + ' of ' + COUNT + '" disabled>' + pumpkinSVG(i + 1) + '</button>' +
+        '<div class="chip-row"><span class="chip" data-chip="' + i + '"></span></div>' +
+      '</div>';
+    }
+    grid.innerHTML = html;
+  }
+  function setBoardLocked(locked) {
+    grid.classList.toggle("locked", locked);
+    grid.querySelectorAll(".pumpkin").forEach(function (b) { b.disabled = locked; });
+  }
+  function fillChips(order, winIdx) {
+    order.forEach(function (p, i) {
+      var c = grid.querySelector('[data-chip="' + i + '"]');
+      if (!c || !p) return;
+      c.innerHTML = '<span aria-hidden="true">' + esc(p.emoji || "🎁") + '</span> ' + esc(p.name);
+      c.classList.toggle("win", i === winIdx);
+    });
+  }
+
+  /* ---------- game flow ---------- */
+  function showNameScreen(prefill) {
+    session = null;
+    buildBoard();
+    setBoardLocked(true);
+    nameBlock.hidden = false;
+    nameInput.value = prefill || "";
+    lede.textContent = "Enter your username, then pick a pumpkin.";
+  }
+
+  function showReady() {
+    buildBoard();
+    setBoardLocked(false);
+    nameBlock.hidden = true;
+    nameMsg.textContent = "";
+    lede.textContent = "Hi @" + session.name + "! Pick a pumpkin.";
+    changeBtn.hidden = false;
+  }
+
+  function resultLine() {
+    var p = session.plan.prize;
+    statusText.innerHTML = '<span class="won">@' + esc(session.name) + ' won: ' + esc(p.emoji) + ' ' + esc(p.name) + '</span>';
+    changeBtn.hidden = true;
+    nextBtn.hidden = false;
+  }
+
+  function startAs(raw) {
+    var name = cleanName(raw);
+    if (!validName(name)) {
+      nameMsg.className = "code-msg err";
+      nameMsg.textContent = NAME_HELP;
+      return;
+    }
+    nameMsg.className = "code-msg";
+    session = { name: name, plan: planFor(name) };
+    showReady();
+  }
+
+  function pick(i) {
+    if (picked || !session) return;
+    picked = true;
+    var faceIdx = randInt(FACES.length);
+    var order = orderFor(session.plan, i);
+    queuePing(session, i);
+    changeBtn.hidden = true;
+
+    var buttons = grid.querySelectorAll(".pumpkin");
+    var btn = buttons[i];
+    buttons.forEach(function (b, idx) {
+      b.disabled = true;
+      b.classList.toggle("picked", idx === i);
+      b.classList.toggle("dim", idx !== i);
+    });
+    lede.textContent = "Carving pumpkin " + (i + 1) + "…";
+    carveInto(btn, faceIdx);
+    fillChips(order, i);
+
+    if (!reduceMotion) btn.classList.add("shake");
+    later(function () {
+      btn.classList.remove("shake");
+      btn.classList.add("carving", "lit");
+      if (!reduceMotion) later(function () { spawnBits(btn); }, 250);
+    }, reduceMotion ? 0 : 450);
+
+    later(function () {
+      var p = session.plan.prize;
+      prizeEmoji.textContent = p.emoji || "🎁";
+      prizeName.textContent = p.name;
+      prizeFine.textContent = "The host will send this to @" + session.name + ".";
+      lede.textContent = "You've played! The host will send your prize to @" + session.name + ".";
+      resultLine();
+      scrim.hidden = false;
+      peekBtn.focus();
+    }, reduceMotion ? 500 : 2300);
+  }
+
+  function closeCard(reveal) {
+    scrim.hidden = true;
+    if (reveal) grid.classList.add("peek");
+    statusBox.focus();
+  }
+
+  grid.addEventListener("click", function (e) {
+    var btn = e.target.closest(".pumpkin");
+    if (!btn || btn.disabled) return;
+    pick(Number(btn.getAttribute("data-i")));
+  });
+  peekBtn.addEventListener("click", function () { closeCard(true); });
+  closeBtn.addEventListener("click", function () { closeCard(false); });
+  scrim.addEventListener("click", function (e) { if (e.target === scrim) closeCard(false); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !scrim.hidden) closeCard(false); });
+
+  nextBtn.addEventListener("click", function () {
+    nameMsg.textContent = "";
+    showNameScreen("");
+    nameInput.focus();
+  });
+  changeBtn.addEventListener("click", function () {
+    var old = session ? session.name : "";
+    nameMsg.textContent = "";
+    showNameScreen(old);
+    nameInput.focus();
+  });
+  startBtn.addEventListener("click", function () { startAs(nameInput.value); });
+  nameInput.addEventListener("keydown", function (e) { if (e.key === "Enter") startAs(nameInput.value); });
+
+  /* ---------- host check (add #host to the end of the web address) ---------- */
+  var hostName = $("hostCode"), hostCheck = $("hostCheck"), hostResult = $("hostResult"), hostTally = $("hostTally");
+
+  function handedOut() { return load(HANDED_KEY) || {}; }
+  function renderTally() {
+    hostTally.textContent = Object.keys(handedOut()).length + " prizes marked as handed out on this device.";
+    var ch = [];
+    ch.push("Discord: " + (CONFIG.discordWebhook ? "set" : "not set"));
+    ch.push("ntfy: " + (CONFIG.ntfyTopic ? "set" : "not set"));
+    $("hostChannels").textContent = "Notification channels: " + ch.join(" · ");
+  }
+  function hostLookup() {
+    var name = cleanName(hostName.value);
+    hostResult.textContent = "";
+    if (!validName(name)) { hostResult.textContent = NAME_HELP; return; }
+    var p = planFor(name).prize;
+    var done = handedOut()[name];
+    var big = document.createElement("div");
+    big.className = "big";
+    big.textContent = "@" + name + " wins " + (p.emoji || "🎁") + " " + p.name;
+    var state = document.createElement("div");
+    state.className = "state " + (done ? "used" : "ok");
+    state.textContent = done ? "Already handed out " + fmtTime(done) : "Not handed out yet.";
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "btn small" + (done ? " ghost" : "");
+    btn.textContent = done ? "Undo" : "Mark as handed out";
+    btn.addEventListener("click", function () {
+      var map = handedOut();
+      if (map[name]) delete map[name]; else map[name] = Date.now();
+      store(HANDED_KEY, map);
+      renderTally();
+      hostLookup();
+    });
+    hostResult.appendChild(big);
+    hostResult.appendChild(state);
+    hostResult.appendChild(btn);
+  }
+  hostCheck.addEventListener("click", hostLookup);
+  hostName.addEventListener("keydown", function (e) { if (e.key === "Enter") hostLookup(); });
+  $("hostTest").addEventListener("click", async function () {
+    var msg = $("hostTestMsg");
+    if (!CONFIG.discordWebhook && !CONFIG.ntfyTopic) {
+      msg.className = "code-msg err";
+      msg.textContent = "No notification channel is set. Add your Discord webhook in the SETTINGS block at the top of the script.";
+      return;
+    }
+    msg.className = "code-msg"; msg.textContent = "Sending…";
+    var ok = await notify("🎃 **Test** from your pumpkin game. If you can read this, notifications work.",
+                          "Test from your pumpkin game. If you can read this, notifications work.", "Pumpkin game test");
+    msg.className = "code-msg" + (ok ? "" : " err");
+    msg.textContent = ok ? "Sent. Check Discord (or your phone) for the message." : "Couldn't send. Check the webhook address and your internet connection.";
+  });
+
+  function route() {
+    var isHost = location.hash === "#host";
+    playerView.hidden = isHost;
+    hostView.hidden = !isHost;
+    if (isHost) renderTally();
+  }
+  window.addEventListener("hashchange", route);
+
+  /* ---------- start ---------- */
+  buildBoard();
+  route();
+  retryPending();
+  showNameScreen("");
+})();
+</script>
+</body>
+</html>
